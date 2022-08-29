@@ -1,6 +1,4 @@
-#Back-end (web-server)
-
-#import streamlit as st
+# BACK-END
 from flask import Flask, render_template
 from flask_socketio import SocketIO, send
 
@@ -11,9 +9,18 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 @socketio.on('message')  # pitää olla message
 def handle_message(msg):
-    if msg == 'get_messages':
-        print("serveri sai viestin get_messages.")
-        # haetaan tiedostosta viestit ja lähetetään ne clientille.
+    if msg == "get_messages":
+        with open('viestit.txt') as f:
+            viestit = f.readlines()
+            viestit.insert(0, 'KAIKKI VIESTIT')
+            send(viestit, broadcast=True)
+    else:
+        if msg:
+            with open('viestit.txt', 'a') as f:
+                f.write(msg+'\n')
+            with open('viestit.txt') as f:
+                viestit = f.readlines()
+                send(viestit[-1], broadcast=True)
 
 
 @app.route('/')
@@ -23,7 +30,3 @@ def index():
 
 if __name__ == "__main__":
     socketio.run(app, host="localhost")
-
-
-# google cdn socket.io
-# https://cdnjs.com/libraries/socket.io
